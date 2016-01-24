@@ -1,4 +1,6 @@
 *.iml
+.idea
+.nrepl-history
 
 # leiningen generated files
 project.clj
