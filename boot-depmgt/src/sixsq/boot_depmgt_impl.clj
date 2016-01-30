@@ -1,6 +1,7 @@
 (ns sixsq.boot-depmgt-impl
   (:require [boot.core :as boot :refer [deftask]]
             [boot.pod :as pod]
+            [boot.util :as util]
             [clojure.edn :as edn]))
 
 (defn prepend-version-key [opts]
@@ -19,20 +20,17 @@
          (concat [pkg] v)
          vec)))
 
-(defn read-file [file]
-  (if file
-    (edn/read-string (slurp file))
-    []))
-
 (defn defaults-map [deps]
   (into {} (map dep->entry deps)))
 
 (defn read-defaults [fileset fname]
-  (->> fname
-       (boot/tmp-get fileset)
-       boot/tmp-file
-       read-file
-       defaults-map))
+  (if-let [f (boot/tmp-get fileset fname)]
+    (->> f
+         boot/tmp-file
+         slurp
+         edn/read-string
+         defaults-map)
+    []))
 
 (defn complete [defaults-map]
   (fn [dep]
@@ -42,11 +40,11 @@
       (entry->dep pkg result))))      
 
 (defn merge-defaults [defaults deps]
-  (map (complete defaults) deps))
+  (vec (map (complete defaults) deps)))
 
 (defn deps-update-function [completed-deps]
   (fn [existing-deps]
-    (concat existing-deps completed-deps)))
+    (vec (concat existing-deps completed-deps))))
 
 (defn update-deps! [completed-deps]
-  (boot/set-env! :dependencies (deps-update-function [completed-deps])))
+  (boot/set-env! :dependencies (deps-update-function completed-deps)))
