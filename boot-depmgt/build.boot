@@ -13,7 +13,6 @@
  '[[org.clojure/clojure "1.8.0"]
    [boot/core "2.5.5"]
    [boot/pod "2.5.5"]
-   [prismatic/schema "1.0.4"]
 
    [adzerk/boot-test "1.1.0" :scope "test"]])
 
