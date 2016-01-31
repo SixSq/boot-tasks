@@ -26,6 +26,7 @@
             deps-file (or deps-file "deps.edn")
             defaults (impl/read-defaults fileset default-deps-file)
             file-deps (impl/read-deps fileset deps-file)
-            deps (concat deps file-deps)]
-        (impl/update-deps! defaults deps)
+            deps (concat deps file-deps)
+            completed-deps (impl/merge-defaults defaults deps)]
+        (impl/update-deps! completed-deps)
         (next-task fileset)))))
