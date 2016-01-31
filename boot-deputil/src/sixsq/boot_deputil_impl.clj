@@ -1,4 +1,4 @@
-(ns sixsq.boot-depmgt-impl
+(ns sixsq.boot-deputil-impl
   (:require [boot.core :as boot :refer [deftask]]
             [boot.pod :as pod]
             [boot.util :as util]

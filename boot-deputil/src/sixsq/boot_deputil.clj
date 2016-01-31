@@ -1,7 +1,7 @@
-(ns sixsq.boot-depmgt
+(ns sixsq.boot-deputil
   {:boot/export-tasks true}
   (:require [boot.core :refer [deftask]]
-            [sixsq.boot-depmgt-impl :as impl]))
+            [sixsq.boot-deputil-impl :as impl]))
 
 (deftask set-deps!
   "Add the dependencies defined in a list and/or in the 'deps.edn' source
@@ -20,8 +20,8 @@
   [d deps DEPS edn "Define DEPS, the vector of dependencies to set"
    _ default-deps-file FILE str "FILE (default-deps.edn) with dependency defaults"
    _ deps-file FILE str "FILE (deps.edn) with project dependencies"]
-  (fn depmgt-middleware [next-task]
-    (fn depmgt-handler [fileset]
+  (fn deputil-middleware [next-task]
+    (fn deputil-handler [fileset]
       (let [default-deps-file (or default-deps-file "default-deps.edn")
             deps-file (or deps-file "deps.edn")
             defaults (impl/read-defaults fileset default-deps-file)

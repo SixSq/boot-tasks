@@ -1,5 +1,5 @@
 (task-options!
-  pom {:project     'sixsq/boot-depmgt
+  pom {:project     'sixsq/boot-deputil
        :version     "0.0.1"
        :description "central management of dependency versions and flags"
        :url         "https://github.com/sixsq/boot"

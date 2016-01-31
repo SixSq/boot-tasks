@@ -1,6 +1,6 @@
-(ns sixsq.boot-depmgt-impl-test
+(ns sixsq.boot-deputil-impl-test
   (:require [clojure.test :refer :all]
-            [sixsq.boot-depmgt-impl :refer :all]))
+            [sixsq.boot-deputil-impl :refer :all]))
 
 (deftest check-prepend
   (are [x y] (= x (prepend-version-key y))
