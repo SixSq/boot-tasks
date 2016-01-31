@@ -23,14 +23,16 @@
 (defn defaults-map [deps]
   (into {} (map dep->entry deps)))
 
-(defn read-defaults [fileset fname]
+(defn read-deps [fileset fname]
   (if-let [f (boot/tmp-get fileset fname)]
     (->> f
          boot/tmp-file
          slurp
-         edn/read-string
-         defaults-map)
+         edn/read-string)
     []))
+
+(defn read-defaults [fileset fname]
+  (defaults-map (read-deps fileset fname)))
 
 (defn complete [defaults-map]
   (fn [dep]
