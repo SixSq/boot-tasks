@@ -1,23 +1,28 @@
-(task-options!
-  pom {:project     'sixsq/boot-deputil
-       :version     "0.0.1"
-       :description "central management of dependency versions and flags"
-       :url         "https://github.com/sixsq/boot"
-       :license     {"EPL" "https://www.eclipse.org/org/documents/epl-v10.html"}}
-  aot {:all true})
-
 (set-env!
  :resource-paths #{"src"}
  :source-paths #{"test"}
+
  :dependencies
  '[[org.clojure/clojure "1.8.0"]
    [boot/core "2.5.5"]
    [boot/pod "2.5.5"]
+   [adzerk/boot-test "1.1.0" :scope "test"]]
 
-   [adzerk/boot-test "1.1.0" :scope "test"]])
+ :repositories
+ #(reduce conj %
+          '[["boot-releases" {:url "http://nexus.sixsq.com/content/repositories/releases-boot"}]
+            ["boot-snapshots" {:url "http://nexus.sixsq.com/content/repositories/snapshots-boot"}]]))
 
 (require
  '[adzerk.boot-test :refer [test]])
+
+(task-options!
+  pom {:project     'sixsq/boot-deputil
+       :version     "0.0.1-SNAPSHOT"
+       :description "central management of dependency versions and flags"
+       :url         "https://github.com/sixsq/boot"
+       :license     {"EPL" "https://www.eclipse.org/org/documents/epl-v10.html"}}
+  aot {:all true})
 
 (deftask build
          "full build and install"
