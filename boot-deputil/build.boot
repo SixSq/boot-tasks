@@ -1,6 +1,6 @@
 (task-options!
   pom {:project     'sixsq/boot-deputil
-       :version     "0.1.0-SNAPSHOT"
+       :version     "0.1.0"
        :description "central management of dependency versions and flags"
        :url         "https://github.com/sixsq/boot-tasks"
        :license     {"Apache 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}}
