@@ -1,3 +1,11 @@
+(task-options!
+  pom {:project     'sixsq/boot-deputil
+       :version     "0.1.0-SNAPSHOT"
+       :description "central management of dependency versions and flags"
+       :url         "https://github.com/sixsq/boot-tasks"
+       :license     {"Apache 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}}
+  aot {:all true})
+
 (set-env!
  :resource-paths #{"src"}
  :source-paths #{"test"}
@@ -15,14 +23,6 @@
 
 (require
  '[adzerk.boot-test :refer [test]])
-
-(task-options!
-  pom {:project     'sixsq/boot-deputil
-       :version     "0.0.1-SNAPSHOT"
-       :description "central management of dependency versions and flags"
-       :url         "https://github.com/sixsq/boot"
-       :license     {"EPL" "https://www.eclipse.org/org/documents/epl-v10.html"}}
-  aot {:all true})
 
 (deftask build
          "full build and install"
