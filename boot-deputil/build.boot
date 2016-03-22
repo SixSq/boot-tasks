@@ -6,7 +6,7 @@
        :description "central management of dependency versions and flags"
        :url         "https://github.com/sixsq/boot-tasks"
        :license     {"Apache 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
-       :scm         {:url "git@github.com:SixSq/boot-tasks.git"}
+       :scm         {:url "git@github.com:SixSq/boot-tasks.git"}}
   aot {:all true})
 
 (set-env!
