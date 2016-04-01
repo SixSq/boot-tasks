@@ -1,4 +1,4 @@
-(def +version+ "0.2.2-SNAPSHOT")
+(def +version+ "0.2.2")
 
 (task-options!
   pom {:project     'sixsq/boot-deputil
