@@ -14,7 +14,8 @@
 ;;
 (ns sixsq.boot-deputil-impl-test
   (:require [clojure.test :refer :all]
-            [sixsq.boot-deputil-impl :refer :all]))
+            [sixsq.boot-deputil-impl :refer :all]
+            [boot.core :as boot]))
 
 (deftest check-prepend
   (are [x y] (= x (prepend-version-key y))
@@ -32,8 +33,8 @@
 
 (deftest check-entry->dep
   (are [x y] (= x (apply entry->dep y))
-       ['alpha/beta] ['alpha/beta {}] 
-       ['alpha/beta :a "a"] ['alpha/beta {:a "a"}] 
+       ['alpha/beta] ['alpha/beta {}]
+       ['alpha/beta :a "a"] ['alpha/beta {:a "a"}]
        ['alpha/beta "1.0.0"] ['alpha/beta {:version "1.0.0"}]
        ['alpha/beta "1.0.0" :a "a"] ['alpha/beta {:version "1.0.0" :a "a"}]))
 
@@ -51,6 +52,15 @@
          '[alpha/beta "1.0.0"] '[alpha/beta]
          '[alpha/beta "1.0.0" :b "b"] '[alpha/beta :b "b"]
          '[gamma/delta "2.0.0" :a "a"] '[gamma/delta])))
+
+(deftest check-lookup-keywords
+  (let [_ (boot/set-env! :replace "REPLACE")
+        x {:version "1.0.0"}
+        y {:version :unknown}
+        z {:version :replace}]
+    (is (= x (lookup-keywords x)))
+    (is (= y (lookup-keywords y)))
+    (is (= {:version "REPLACE"} (lookup-keywords z)))))
 
 (deftest check-merge
   (let [defaults (defaults-map '[[alpha/beta "1.0.0"]

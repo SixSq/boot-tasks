@@ -55,7 +55,7 @@
   [k (lookup v)])
 
 (defn lookup-keywords [m]
-  (map replace-entry m))
+  (into {} (map replace-entry m)))
 
 (defn complete [defaults-map]
   (fn [dep]
