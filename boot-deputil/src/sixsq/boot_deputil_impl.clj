@@ -14,8 +14,6 @@
 ;;
 (ns sixsq.boot-deputil-impl
   (:require [boot.core :as boot :refer [deftask]]
-            [boot.pod :as pod]
-            [boot.util :as util]
             [clojure.edn :as edn]))
 
 (defn prepend-version-key [opts]
@@ -48,12 +46,23 @@
 (defn read-defaults [fileset fname]
   (defaults-map (read-deps fileset fname)))
 
+(defn lookup [kw]
+  (if (keyword? kw)
+    (boot/get-env kw kw)
+    kw))
+
+(defn replace-entry [[k v]]
+  [k (lookup v)])
+
+(defn lookup-keywords [m]
+  (map replace-entry m))
+
 (defn complete [defaults-map]
   (fn [dep]
     (let [[pkg opts] (dep->entry dep)
           default (get defaults-map pkg)
-          result (merge default opts)]
-      (entry->dep pkg result))))      
+          result (lookup-keywords (merge default opts))]
+      (entry->dep pkg result))))
 
 (defn merge-defaults [defaults deps]
   (vec (map (complete defaults) deps)))
