@@ -16,9 +16,9 @@
 
  :dependencies
  '[[org.clojure/clojure "1.8.0"]
-   [boot/core "2.5.5"]
-   [boot/pod "2.5.5"]
-   [adzerk/boot-test "1.1.0" :scope "test"]
+   [boot/core "2.6.0"]
+   [boot/pod "2.6.0"]
+   [adzerk/boot-test "1.1.2" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]]
 
  :repositories

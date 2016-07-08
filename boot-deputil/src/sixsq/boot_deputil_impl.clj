@@ -13,27 +13,19 @@
 ;; limitations under the License.
 ;;
 (ns sixsq.boot-deputil-impl
-  (:require [boot.core :as boot :refer [deftask]]
-            [clojure.edn :as edn]))
+  (:require
+    [boot.core :as boot]
+    [boot.util :as butil]
+    [clojure.edn :as edn]))
 
-(defn prepend-version-key [opts]
-  (if (odd? (count opts))
-    (cons :version opts)
-    opts))
-
-(defn dep->entry [[pkg & opts]]
-  [pkg (apply hash-map (prepend-version-key opts))])
-
-(defn entry->dep [pkg opts]
-  (let [v (:version opts)
-        v (when v (vector v))]
-    (->> (dissoc opts :version)
-         (mapcat identity)
-         (concat [pkg] v)
-         vec)))
-
-(defn defaults-map [deps]
-  (into {} (map dep->entry deps)))
+(defn defaults-map
+  "Returns a map of dependencies (represented as a map) keyed by
+   the project name."
+  [deps]
+  (->> deps
+       (map butil/dep-as-map)
+       (map (juxt :project identity))
+       (into {})))
 
 (defn read-deps [fileset fname]
   (if-let [f (boot/tmp-get fileset fname)]
@@ -46,26 +38,28 @@
 (defn read-defaults [fileset fname]
   (defaults-map (read-deps fileset fname)))
 
-(defn lookup [kw]
-  (if (keyword? kw)
-    (boot/get-env kw kw)
-    kw))
+(defn resolve-version
+  "Looks up the value of :version in the map and replaces it
+   by the value in the environment, if found."
+  [m]
+  (let [version (:version m)
+        version (or (boot/get-env version) version)]
+    (assoc m :version version)))
 
-(defn replace-entry [[k v]]
-  [k (lookup v)])
+(defn remove-nil-values [m]
+  (into {} (filter second m)))
 
-(defn lookup-keywords [m]
-  (into {} (map replace-entry m)))
-
-(defn complete [defaults-map]
-  (fn [dep]
-    (let [[pkg opts] (dep->entry dep)
-          default (get defaults-map pkg)
-          result (lookup-keywords (merge default opts))]
-      (entry->dep pkg result))))
+(defn complete
+  "Completes the information in the given dependency with
+   the information from the defaults."
+  [defaults dep]
+  (let [{:keys [project] :as depmap} (butil/dep-as-map dep)
+        result (resolve-version (merge (get defaults project)
+                                       (remove-nil-values depmap)))]
+    (butil/map-as-dep result)))
 
 (defn merge-defaults [defaults deps]
-  (vec (map (complete defaults) deps)))
+  (vec (map (partial complete defaults) deps)))
 
 (defn deps-update-function [completed-deps]
   (fn [existing-deps]

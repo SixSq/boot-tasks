@@ -15,42 +15,41 @@
 (ns sixsq.boot-deputil-impl-test
   (:require [clojure.test :refer :all]
             [sixsq.boot-deputil-impl :refer :all]
-            [boot.core :as boot]))
+            [boot.core :as boot]
+            [boot.util :as butil]))
 
-(deftest check-prepend
-  (are [x y] (= x (prepend-version-key y))
-       [] []
-       [:a "a"] [:a "a"]
-       [:version "1.2.3"] ["1.2.3"]
-       [:version "1.2.3" :a "a"] ["1.2.3" :a "a"]))
+(deftest check-dep-as-map
+  (are [x y] (= x (butil/dep-as-map y))
+             {:project 'alpha/beta :version nil :scope "compile"} ['alpha/beta]
+             {:project 'alpha/beta :version nil :scope "compile" :a "a"} ['alpha/beta nil :a "a"]
+             {:project 'alpha/beta :version "1.0.0" :scope "compile"} ['alpha/beta "1.0.0"]
+             {:project 'alpha/beta :version "1.0.0" :scope "compile" :a "a"} ['alpha/beta "1.0.0" :a "a"]))
 
-(deftest check-dep->entry
-  (are [x y] (= x (dep->entry y))
-       ['alpha/beta {}] ['alpha/beta]
-       ['alpha/beta {:a "a"}] ['alpha/beta :a "a"]
-       ['alpha/beta {:version "1.0.0"}] ['alpha/beta "1.0.0"]
-       ['alpha/beta {:version "1.0.0" :a "a"}] ['alpha/beta "1.0.0" :a "a"]))
-
-(deftest check-entry->dep
-  (are [x y] (= x (apply entry->dep y))
-       ['alpha/beta] ['alpha/beta {}]
-       ['alpha/beta :a "a"] ['alpha/beta {:a "a"}]
-       ['alpha/beta "1.0.0"] ['alpha/beta {:version "1.0.0"}]
-       ['alpha/beta "1.0.0" :a "a"] ['alpha/beta {:version "1.0.0" :a "a"}]))
+(deftest check-map-as-dep
+  (are [x y] (= x (butil/map-as-dep y))
+             ['alpha/beta] {:project 'alpha/beta}
+             ['alpha/beta :a "a"] {:project 'alpha/beta :version nil :a "a"}
+             ['alpha/beta "1.0.0"] {:project 'alpha/beta :version "1.0.0"}
+             ['alpha/beta "1.0.0" :a "a"] {:project 'alpha/beta :version "1.0.0" :a "a"}))
 
 (deftest check-defaults-map
-  (is (= {'alpha/beta {:version "1.0.0"}
-          'gamma/delta {:version "2.0.0" :a "a"}}
+  (is (= {'alpha/beta {:project 'alpha/beta
+                       :version "1.0.0"
+                       :scope "compile"}
+          'gamma/delta {:project 'gamma/delta
+                        :version "2.0.0"
+                        :scope "compile"
+                        :a "a"}}
          (defaults-map '[[alpha/beta "1.0.0"]
                          [gamma/delta "2.0.0" :a "a"]]))))
 
 (deftest check-complete
   (let [defaults (defaults-map '[[alpha/beta "1.0.0"]
                                  [gamma/delta "2.0.0" :a "a"]])
-        f (complete defaults)]
+        f (partial complete defaults)]
     (are [x y] (= x (f y))
          '[alpha/beta "1.0.0"] '[alpha/beta]
-         '[alpha/beta "1.0.0" :b "b"] '[alpha/beta :b "b"]
+         '[alpha/beta "1.0.0" :b "b"] '[alpha/beta nil :b "b"]
          '[gamma/delta "2.0.0" :a "a"] '[gamma/delta])))
 
 (deftest check-lookup-keywords
@@ -58,9 +57,9 @@
         x {:version "1.0.0"}
         y {:version :unknown}
         z {:version :replace}]
-    (is (= x (lookup-keywords x)))
-    (is (= y (lookup-keywords y)))
-    (is (= {:version "REPLACE"} (lookup-keywords z)))))
+    (is (= x (resolve-version x)))
+    (is (= y (resolve-version y)))
+    (is (= {:version "REPLACE"} (resolve-version z)))))
 
 (deftest check-merge
   (let [defaults (defaults-map '[[alpha/beta "1.0.0"]
@@ -69,17 +68,17 @@
          '[[alpha/beta "1.0.0" :b "b"]
            [gamma/delta "2.0.0" :a "a"]]
 
-         '[[alpha/beta :b "b"]
+         '[[alpha/beta nil :b "b"]
            [gamma/delta]]
 
          '[[gamma/delta "2.0.0" :a "a"]
            [alpha/beta "1.0.0" :b "b"]]
          '[[gamma/delta]
-           [alpha/beta :b "b"]]
+           [alpha/beta nil :b "b"]]
 
          '[[gamma/delta "2.0.0" :a "a"]
            [alpha/beta "1.0.0" :b "b"]
            [alpha/omega]]
          '[[gamma/delta]
-           [alpha/beta :b "b"]
+           [alpha/beta nil :b "b"]
            [alpha/omega]])))
