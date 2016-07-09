@@ -12,7 +12,7 @@
 
 (set-env!
  :resource-paths #{"src"}
- :source-paths #{"test"}
+ :source-paths #{"test" "test-resources"}
 
  :dependencies
  '[[org.clojure/clojure "1.8.0"]

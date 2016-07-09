@@ -15,70 +15,66 @@
 (ns sixsq.boot-fns-impl-test
   (:require [clojure.test :refer :all]
             [sixsq.boot-fns-impl :refer :all]
-            [boot.core :as boot]
-            [boot.util :as butil]))
+            [boot.core :as boot]))
 
-(deftest check-dep-as-map
-  (are [x y] (= x (butil/dep-as-map y))
-             {:project 'alpha/beta :version nil :scope "compile"} ['alpha/beta]
-             {:project 'alpha/beta :version nil :scope "compile" :a "a"} ['alpha/beta nil :a "a"]
-             {:project 'alpha/beta :version "1.0.0" :scope "compile"} ['alpha/beta "1.0.0"]
-             {:project 'alpha/beta :version "1.0.0" :scope "compile" :a "a"} ['alpha/beta "1.0.0" :a "a"]))
+(def ^:const test-deps '[[alpha/beta "1.0.0"]
+                         [gamma/delta "2.0.0" :a "a"]])
 
-(deftest check-map-as-dep
-  (are [x y] (= x (butil/map-as-dep y))
-             ['alpha/beta] {:project 'alpha/beta}
-             ['alpha/beta :a "a"] {:project 'alpha/beta :version nil :a "a"}
-             ['alpha/beta "1.0.0"] {:project 'alpha/beta :version "1.0.0"}
-             ['alpha/beta "1.0.0" :a "a"] {:project 'alpha/beta :version "1.0.0" :a "a"}))
+(def ^:const test-indexed-map {'alpha/beta  {:project 'alpha/beta
+                                             :version "1.0.0"
+                                             :scope   "compile"}
+                               'gamma/delta {:project 'gamma/delta
+                                             :version "2.0.0"
+                                             :scope   "compile"
+                                             :a       "a"}})
 
 (deftest check-defaults-map
-  (is (= {'alpha/beta {:project 'alpha/beta
-                       :version "1.0.0"
-                       :scope "compile"}
-          'gamma/delta {:project 'gamma/delta
-                        :version "2.0.0"
-                        :scope "compile"
-                        :a "a"}}
-         (defaults-map '[[alpha/beta "1.0.0"]
-                         [gamma/delta "2.0.0" :a "a"]]))))
+  (is (= test-indexed-map
+         (defaults-map test-deps))))
 
-(deftest check-complete
-  (let [defaults (defaults-map '[[alpha/beta "1.0.0"]
-                                 [gamma/delta "2.0.0" :a "a"]])
-        f (partial complete defaults)]
+(deftest check-read-default-deps
+  (is (= test-deps (read-default-deps "test-default-deps.edn"))))
+
+(deftest check-remove-nil-values
+  (are [x y] (= x (remove-nil-values y))
+             {} {:a nil}
+             {:a 1} {:a 1 :b nil}
+             {:a 1 :c 3} {:a 1 :b nil :c 3}))
+
+(deftest check-resolve-version
+  (let [v1 "1.2.3"
+        v2 "3.2.1"
+        _ (boot/set-env! :version v1 :other v2)]
+    (are [x y] (= x (resolve-version y))
+               {:a 1 :version v1} {:a 1 :version :version}
+               {:a 1 :version v2} {:a 1 :version :other}
+               {:a 1 :version :unknown} {:a 1 :version :unknown}
+               {:version nil} {:version nil})))
+
+(deftest check-complete-dep
+  (let [defaults (defaults-map test-deps)
+        f (partial complete-dep defaults)]
     (are [x y] (= x (f y))
-         '[alpha/beta "1.0.0"] '[alpha/beta]
-         '[alpha/beta "1.0.0" :b "b"] '[alpha/beta nil :b "b"]
-         '[gamma/delta "2.0.0" :a "a"] '[gamma/delta])))
+               '[alpha/beta "1.0.0"] '[alpha/beta]
+               '[alpha/beta "1.0.0" :b "b"] '[alpha/beta nil :b "b"]
+               '[gamma/delta "2.0.0" :a "a"] '[gamma/delta])))
 
-(deftest check-lookup-keywords
-  (let [_ (boot/set-env! :replace "REPLACE")
-        x {:version "1.0.0"}
-        y {:version :unknown}
-        z {:version :replace}]
-    (is (= x (resolve-version x)))
-    (is (= y (resolve-version y)))
-    (is (= {:version "REPLACE"} (resolve-version z)))))
+(deftest check-complete-deps
+  (let [defaults (defaults-map test-deps)]
+    (are [x y] (= x (complete-deps defaults y))
+               '[[alpha/beta "1.0.0" :b "b"]
+                 [gamma/delta "2.0.0" :a "a"]]
+               '[[alpha/beta nil :b "b"]
+                 [gamma/delta]]
 
-(deftest check-merge
-  (let [defaults (defaults-map '[[alpha/beta "1.0.0"]
-                                 [gamma/delta "2.0.0" :a "a"]])]
-    (are [x y] (= x (merge-defaults defaults y))
-         '[[alpha/beta "1.0.0" :b "b"]
-           [gamma/delta "2.0.0" :a "a"]]
+               '[[gamma/delta "2.0.0" :a "a"]
+                 [alpha/beta "1.0.0" :b "b"]]
+               '[[gamma/delta]
+                 [alpha/beta nil :b "b"]]
 
-         '[[alpha/beta nil :b "b"]
-           [gamma/delta]]
-
-         '[[gamma/delta "2.0.0" :a "a"]
-           [alpha/beta "1.0.0" :b "b"]]
-         '[[gamma/delta]
-           [alpha/beta nil :b "b"]]
-
-         '[[gamma/delta "2.0.0" :a "a"]
-           [alpha/beta "1.0.0" :b "b"]
-           [alpha/omega]]
-         '[[gamma/delta]
-           [alpha/beta nil :b "b"]
-           [alpha/omega]])))
+               '[[gamma/delta "2.0.0" :a "a"]
+                 [alpha/beta "1.0.0" :b "b"]
+                 [alpha/omega]]
+               '[[gamma/delta]
+                 [alpha/beta nil :b "b"]
+                 [alpha/omega]])))
