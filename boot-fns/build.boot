@@ -1,9 +1,9 @@
 (def +version+ "0.1.0")
 
 (task-options!
-  pom {:project     'sixsq/boot-fns
+  pom {:project     'sixsq/build-utils
        :version     +version+
-       :description "common functions for build management"
+       :description "common functions and tasks for managing builds"
        :url         "https://github.com/sixsq/boot-tasks"
        :license     {"Apache 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
        :scm         {:url "git@github.com:SixSq/boot-tasks.git"}}

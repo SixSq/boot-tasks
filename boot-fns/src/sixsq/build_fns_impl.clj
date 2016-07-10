@@ -12,7 +12,7 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 ;;
-(ns sixsq.boot-fns-impl
+(ns sixsq.build-fns-impl
   (:require
     [boot.core :as boot]
     [boot.pod :as pod]
@@ -28,7 +28,13 @@
   (when-let [env (or (boot/get-env) pod/env)]
     (get env k)))
 
-(defn protected-dep-as-map [dep]
+(defn protected-dep-as-map
+  "Uses the standard boot utility to convert a dependency specification
+   to a map.  However, if an exception is thrown in the conversion
+   (usually from an invalid spec like ['myproject :scope \"test\"]),
+   then a modified exception will be thrown showing the problematic
+   specification."
+  [dep]
   (try
     (butil/dep-as-map dep)
     (catch Exception _

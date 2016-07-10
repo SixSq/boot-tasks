@@ -12,9 +12,9 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 ;;
-(ns sixsq.boot-fns-impl-test
+(ns sixsq.build-fns-impl-test
   (:require [clojure.test :refer :all]
-            [sixsq.boot-fns-impl :refer :all]
+            [sixsq.build-fns-impl :refer :all]
             [boot.core :as boot]))
 
 (def ^:const test-deps '[[alpha/beta "1.0.0"]
