@@ -15,9 +15,24 @@
 (ns sixsq.boot-fns-impl
   (:require
     [boot.core :as boot]
+    [boot.pod :as pod]
     [boot.util :as butil]
     [clojure.edn :as edn]
     [clojure.java.io :as io]))
+
+(defn get-env
+  "Defaults to using the global environment when available.  If
+   not, then it will use the pod environment.  If neither exists,
+   then nil will be returned."
+  [k]
+  (when-let [env (or (boot/get-env) pod/env)]
+    (get env k)))
+
+(defn protected-dep-as-map [dep]
+  (try
+    (butil/dep-as-map dep)
+    (catch Exception _
+      (throw (ex-info (str "invalid dependency specification: '" dep "'\n") {})))))
 
 (defn defaults-map
   "Accepts a list of dependency specifications and returns a
@@ -25,7 +40,8 @@
    and the key is the value of :project in the dependency."
   [deps]
   (->> deps
-       (map butil/dep-as-map)
+       (map protected-dep-as-map)
+       (remove nil?)
        (map (juxt :project identity))
        (into {})))
 
@@ -34,12 +50,13 @@
    'default-deps.edn' which must be available on the classpath.
    Returns nil if the file cannot be found."
   ([]
-    (read-default-deps "default-deps.edn"))
-  ([defaults-deps]
-   (when-let [f (io/resource defaults-deps)]
-     (-> f
-         slurp
-         edn/read-string))))
+   (read-default-deps nil))
+  ([defaults-filename]
+   (let [defaults-filename (or defaults-filename "default-deps.edn")]
+     (when-let [f (io/resource defaults-filename)]
+       (-> f
+           slurp
+           edn/read-string)))))
 
 (defn remove-nil-values
   "Removes all keys in the map that have nil values."
@@ -52,7 +69,7 @@
    the value is unchanged."
   [dep-map]
   (if-let [version (:version dep-map)]
-    (assoc dep-map :version (or (boot/get-env version) version))
+    (assoc dep-map :version (or (get-env version) version))
     dep-map))
 
 (defn complete-dep
@@ -72,3 +89,5 @@
   [defaults deps]
   (vec (map (partial complete-dep defaults) deps)))
 
+(defn merge-deps [deps]
+  (complete-deps (defaults-map (read-default-deps nil)) deps))

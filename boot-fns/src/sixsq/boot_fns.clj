@@ -14,10 +14,15 @@
 ;;
 (ns sixsq.boot-fns
   {:boot/export-tasks true}
-  (:require [boot.core :refer [deftask]]
-            [sixsq.boot-fns-impl :as impl]))
+  (:require
+    [boot.core :as boot :refer [deftask]]
+    [boot.pod :as pod]
+    [sixsq.boot-fns-impl]))
 
-(defn merge-defaults [deps]
-  (let [defaults (impl/read-default-deps)]
-    (impl/complete-deps defaults deps)))
+(defn merge-defaults [default-deps-dep deps]
+  (let [env (update-in (boot/get-env) [:dependencies]
+                       conj default-deps-dep)
+        pod (pod/make-pod env)]
+    (pod/with-call-in pod
+                      (sixsq.boot-fns-impl/merge-deps ~deps))))
 
