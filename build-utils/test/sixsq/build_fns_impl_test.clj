@@ -18,7 +18,8 @@
             [boot.core :as boot]))
 
 (def ^:const test-deps '[[alpha/beta "1.0.0"]
-                         [gamma/delta "2.0.0" :a "a"]])
+                         [gamma/delta "2.0.0" :a "a"]
+                         [test/excl "1.2.3" :exclusions [a b c d]]])
 
 (def ^:const test-indexed-map {'alpha/beta  {:project 'alpha/beta
                                              :version "1.0.0"
@@ -26,7 +27,11 @@
                                'gamma/delta {:project 'gamma/delta
                                              :version "2.0.0"
                                              :scope   "compile"
-                                             :a       "a"}})
+                                             :a       "a"}
+                               'test/excl   {:project    'test/excl
+                                             :version    "1.2.3"
+                                             :scope      "compile"
+                                             :exclusions '[a b c d]}})
 
 (deftest check-defaults-map
   (is (= test-indexed-map
@@ -57,7 +62,8 @@
     (are [x y] (= x (f y))
                '[alpha/beta "1.0.0"] '[alpha/beta]
                '[alpha/beta "1.0.0" :b "b"] '[alpha/beta nil :b "b"]
-               '[gamma/delta "2.0.0" :a "a"] '[gamma/delta])))
+               '[gamma/delta "2.0.0" :a "a"] '[gamma/delta]
+               '[test/excl "1.2.3" :exclusions [a b c d]] '[test/excl])))
 
 (deftest check-complete-deps
   (let [defaults (defaults-map test-deps)]
@@ -77,4 +83,11 @@
                  [alpha/omega]]
                '[[gamma/delta]
                  [alpha/beta nil :b "b"]
-                 [alpha/omega]])))
+                 [alpha/omega]]
+
+               '[[alpha/omega]
+                 [test/excl "1.2.3" :exclusions [a b c d]]]
+               '[[alpha/omega]
+                 [test/excl]]
+
+               )))

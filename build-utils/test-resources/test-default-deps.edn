@@ -1,2 +1,3 @@
 [[alpha/beta "1.0.0"]
- [gamma/delta "2.0.0" :a "a"]]
+ [gamma/delta "2.0.0" :a "a"]
+ [test/excl "1.2.3" :exclusions [a b c d]]]

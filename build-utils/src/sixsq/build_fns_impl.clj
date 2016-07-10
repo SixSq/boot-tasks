@@ -20,13 +20,17 @@
     [clojure.edn :as edn]
     [clojure.java.io :as io]))
 
-(defn get-env
-  "Defaults to using the global environment when available.  If
-   not, then it will use the pod environment.  If neither exists,
-   then nil will be returned."
-  [k]
-  (when-let [env (or (boot/get-env) pod/env)]
-    (get env k)))
+(defn fixed-map-as-dep
+  "Returns the given dependency vector with :project and :version put at
+  index 0 and 1 respectively and modifiers (eg. :scope, :exclusions,
+  etc) next.
+
+  This implementation changes 'flatten to mapcat/identity' to avoid
+  flattening values that are themselves collections (e.g. exclusions)."
+  [{:keys [project version] :as dep-map}]
+  (let [kvs (remove #(or (some #{:project :version} %)
+                         (= [:scope "compile"] %)) dep-map)]
+    (vec (remove nil? (into [project version] (mapcat identity kvs))))))
 
 (defn protected-dep-as-map
   "Uses the standard boot utility to convert a dependency specification
@@ -39,6 +43,14 @@
     (butil/dep-as-map dep)
     (catch Exception _
       (throw (ex-info (str "invalid dependency specification: '" dep "'\n") {})))))
+
+(defn get-env
+  "Defaults to using the global environment when available.  If
+   not, then it will use the pod environment.  If neither exists,
+   then nil will be returned."
+  [k]
+  (when-let [env (or (boot/get-env) pod/env)]
+    (get env k)))
 
 (defn defaults-map
   "Accepts a list of dependency specifications and returns a
@@ -87,7 +99,7 @@
          remove-nil-values
          (merge (get defaults project))
          resolve-version
-         butil/map-as-dep)))
+         fixed-map-as-dep)))
 
 (defn complete-deps
   "Iterates over the list of dependencies, completing values
