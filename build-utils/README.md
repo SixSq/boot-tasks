@@ -16,7 +16,7 @@ A typical `build.boot` example looks like:
     (set-env!
      :version "3.8-SNAPSHOT"
      :dependencies '[[org.clojure/clojure "1.8.0"]
-                     [sixsq/build-utils "0.1.0" :scope "test"]])
+                     [sixsq/build-utils "0.1.1" :scope "test"]])
     
     (require '[sixsq.build-fns :refer [merge-defaults]])
     
@@ -39,10 +39,10 @@ This will result in output like:
 
     $ boot show -f 
     [[org.clojure/clojure "1.8.0"]
-     [sixsq/build-utils "0.1.0" :scope "test"]
+     [sixsq/build-utils "0.1.1" :scope "test"]
      [org.elasticsearch/elasticsearch "2.3.3" :scope "test"]
      [clj-time "0.12.0"]
-     [org.clojure/core.async "0.2.382" :excludes org.clojure/tools.reader]]
+     [org.clojure/core.async "0.2.382" :exclusions [org.clojure/tools.reader]]]
 
 Notice that the missing dependency information has been pulled in from the defaults.  A value such as :version can be used for the value of the version.  In this case, the value will be taken from the local environment.  This is useful for dependencies that use the same version as the software being built.
 
