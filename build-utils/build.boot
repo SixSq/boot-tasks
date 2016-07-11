@@ -1,4 +1,4 @@
-(def +version+ "0.1.2")
+(def +version+ "0.1.3")
 
 (task-options!
   pom {:project     'sixsq/build-utils

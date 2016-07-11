@@ -17,6 +17,7 @@
     [boot.core :as boot]
     [boot.pod :as pod]
     [boot.util :as butil]
+    [boot.task.built-in]
     [clojure.edn :as edn]
     [clojure.java.io :as io]))
 
@@ -117,3 +118,21 @@
 
 (defn merge-deps [deps]
   (complete-deps (defaults-map (read-default-deps nil)) deps))
+
+(defn generate-lein-project-file! [& {:keys [keep-project] :or {:keep-project true}}]
+  (require 'clojure.java.io)
+  (let [pfile ((resolve 'clojure.java.io/file) "project.clj")
+        ; Only works when pom options are set using task-options!
+        {:keys [project version]} (:task-options (meta #'boot.task.built-in/pom))
+        prop #(when-let [x (get-env %2)] [%1 x])
+        head (list* 'defproject (or project 'boot-project) (or version "0.0.0-SNAPSHOT")
+                    (concat
+                      (prop :url :url)
+                      (prop :license :license)
+                      (prop :description :description)
+                      [:dependencies (get-env :dependencies)
+                       :source-paths (vec (concat (get-env :source-paths)
+                                                  (get-env :resource-paths)))]))
+        proj (butil/pp-str head)]
+    (if-not keep-project (.deleteOnExit pfile))
+    (spit pfile proj)))

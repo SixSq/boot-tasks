@@ -13,6 +13,7 @@
 ;; limitations under the License.
 ;;
 (ns sixsq.build-fns
+  {:boot/export-tasks true}
   (:require
     [boot.core :as boot :refer [deftask]]
     [boot.pod :as pod]
@@ -30,4 +31,30 @@
   (-> (update-in (boot/get-env) [:dependencies] conj default-deps-dep)
       (pod/make-pod)
       (pod/with-call-in (sixsq.build-fns-impl/merge-deps ~deps))))
+
+(defn sixsq-nexus-url
+  "Returns the appropriate SixSq nexus repository URL.  This pulls the
+   version and edition from the environment.  Both must be defined."
+  []
+  (let [version (boot.core/get-env :version)
+        edition (boot.core/get-env :edition)]
+    (if (and version edition)
+      (let [nexus-url "http://nexus.sixsq.com/content/repositories/"
+            repo-type (if (re-find #"SNAPSHOT" version)
+                        "snapshots"
+                        "releases")]
+        (str nexus-url repo-type "-" edition "-rhel7"))
+      (throw (ex-info "both :version and :edition must be defined in environment" {})))))
+
+(deftask lein-generate
+         "Generate a leiningen `project.clj` file.
+          This task generates a leiningen `project.clj` file based on the boot
+          environment configuration, including project name and version (generated
+          if not present), dependencies, and source paths. Additional keys may be added
+          to the generated `project.clj` file by specifying a `:lein` key in the boot
+          environment whose value is a map of keys-value pairs to add to `project.clj`.
+
+          This is taken from the boot wiki page dealing with cursive integration."
+         []
+         (sixsq.build-fns-impl/generate-lein-project-file! :keep-project true))
 
