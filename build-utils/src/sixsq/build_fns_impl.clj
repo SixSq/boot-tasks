@@ -44,6 +44,13 @@
     (catch Exception _
       (throw (ex-info (str "invalid dependency specification: '" dep "'\n") {})))))
 
+(defn maybe-strip-scope
+  "Strip the generated scope field unless it was explicitly defined."
+  [dep m]
+  (if (some #{:scope} dep)
+    m
+    (dissoc m :scope)))
+
 (defn get-env
   "Defaults to using the global environment when available.  If
    not, then it will use the pod environment.  If neither exists,
@@ -94,7 +101,8 @@
   "Completes the information in the given dependency with
    the information from the defaults."
   [defaults dep]
-  (let [{:keys [project] :as dep-map} (butil/dep-as-map dep)]
+  (let [{:keys [project] :as dep-map} (->> (protected-dep-as-map dep)
+                                           (maybe-strip-scope dep))]
     (->> dep-map
          remove-nil-values
          (merge (get defaults project))
