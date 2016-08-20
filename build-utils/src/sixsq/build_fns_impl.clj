@@ -102,8 +102,7 @@
   "Completes the information in the given dependency with
    the information from the defaults."
   [defaults dep]
-  (let [{:keys [project] :as dep-map} (->> (protected-dep-as-map dep)
-                                           (maybe-strip-scope dep))]
+  (let [{:keys [project] :as dep-map} (maybe-strip-scope dep (protected-dep-as-map dep))]
     (->> dep-map
          remove-nil-values
          (merge (get defaults project))
@@ -119,7 +118,8 @@
 (defn merge-deps [deps]
   (complete-deps (defaults-map (read-default-deps nil)) deps))
 
-(defn generate-lein-project-file! [& {:keys [keep-project] :or {:keep-project true}}]
+(defn generate-lein-project-file! [& {:keys [keep-project]
+                                      :or {keep-project true}}]
   (require 'clojure.java.io)
   (let [pfile ((resolve 'clojure.java.io/file) "project.clj")
         ; Only works when pom options are set using task-options!
