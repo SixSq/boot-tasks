@@ -48,13 +48,16 @@
 
 (deftask lein-generate
          "Generate a leiningen `project.clj` file.
-          This task generates a leiningen `project.clj` file based on the boot
-          environment configuration, including project name and version (generated
-          if not present), dependencies, and source paths. Additional keys may be added
-          to the generated `project.clj` file by specifying a `:lein` key in the boot
-          environment whose value is a map of keys-value pairs to add to `project.clj`.
+          This task generates a leiningen `project.clj` file based on
+          the boot environment configuration, including project name
+          and version (generated if not present), dependencies, and
+          source paths. Additional keys may be added to the generated
+          `project.clj` file by specifying a `:lein` key in the boot
+          environment whose value is a map of keys-value pairs to add
+          to `project.clj`.
 
-          This is taken from the boot wiki page dealing with cursive integration."
+          This is taken from the boot wiki page dealing with cursive
+          integration."
          []
          (sixsq.build-fns-impl/generate-lein-project-file! :keep-project true))
 
