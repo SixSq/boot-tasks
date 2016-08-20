@@ -102,8 +102,7 @@
   "Completes the information in the given dependency with
    the information from the defaults."
   [defaults dep]
-  (let [{:keys [project] :as dep-map} (->> (protected-dep-as-map dep)
-                                           (maybe-strip-scope dep))]
+  (let [{:keys [project] :as dep-map} (maybe-strip-scope dep (protected-dep-as-map dep))]
     (->> dep-map
          remove-nil-values
          (merge (get defaults project))

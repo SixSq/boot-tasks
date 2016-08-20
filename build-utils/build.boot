@@ -19,7 +19,8 @@
    [boot/core "2.6.0"]
    [boot/pod "2.6.0"]
    [adzerk/boot-test "1.1.2" :scope "test"]
-   [adzerk/bootlaces "0.1.13" :scope "test"]]
+   [adzerk/bootlaces "0.1.13" :scope "test"]
+   [tolitius/boot-check "0.1.3" :scope "test"]]
 
  :repositories
  #(reduce conj %
@@ -28,7 +29,11 @@
 
 (require
  '[adzerk.boot-test :refer [test]]
- '[adzerk.bootlaces :refer :all])
+ '[adzerk.bootlaces :refer :all]
+ '[tolitius.boot-check :refer [with-yagni
+                               with-eastwood
+                               with-kibit
+                               with-bikeshed]])
 
 (bootlaces! +version+)
 
