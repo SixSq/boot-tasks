@@ -1,4 +1,4 @@
-(def +version+ "0.1.4")
+(def +version+ "0.1.5")
 
 (task-options!
   pom {:project     'sixsq/build-utils
@@ -15,7 +15,7 @@
  :source-paths #{"test" "test-resources"}
 
  :dependencies
- '[[org.clojure/clojure "1.8.0"]
+ '[[org.clojure/clojure "1.9.0"]
    [boot/core "2.6.0"]
    [boot/pod "2.6.0"]
    [adzerk/boot-test "1.1.2" :scope "test"]
@@ -24,8 +24,8 @@
 
  :repositories
  #(reduce conj %
-          '[["boot-releases" {:url "http://nexus.sixsq.com/content/repositories/releases-boot"}]
-            ["boot-snapshots" {:url "http://nexus.sixsq.com/content/repositories/snapshots-boot"}]]))
+          '[["boot-releases" {:url "https://nexus.sixsq.com/content/repositories/releases-boot"}]
+            ["boot-snapshots" {:url "https://nexus.sixsq.com/content/repositories/snapshots-boot"}]]))
 
 (require
  '[adzerk.boot-test :refer [test]]

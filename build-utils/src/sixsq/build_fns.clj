@@ -39,7 +39,7 @@
   (let [version (boot.core/get-env :version)
         edition (boot.core/get-env :edition)]
     (if (and version edition)
-      (let [nexus-url "http://nexus.sixsq.com/content/repositories/"
+      (let [nexus-url "https://nexus.sixsq.com/content/repositories/"
             repo-type (if (re-find #"SNAPSHOT" version)
                         "snapshots"
                         "releases")]
